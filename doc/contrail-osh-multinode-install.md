@@ -43,7 +43,7 @@ This installation procedure will use Juniper OpenStack Helm infra and OpenStack 
   # Download openstack-helm-infra code on **all Nodes**
   (k8s-all-nodes)> git clone https://github.com/Juniper/openstack-helm-infra.git /opt/openstack-helm-infra
   # Download contrail-helm-deployer code on **Master node only**
-  (k8s-all-nodes)> git clone https://github.com/Juniper/contrail-helm-deployer.git /opt/contrail-helm-deployer
+  (k8s-all-nodes)> git clone https://github.com/tungstenfabric/tf-helm-deployer.git /opt/contrail-helm-deployer
   ```
 
 4. Export variables needed by below procedure

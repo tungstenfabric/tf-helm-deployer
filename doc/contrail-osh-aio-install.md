@@ -34,7 +34,7 @@ Install below packages on your setup
   # Download openstack-helm-infra code
   git clone https://github.com/Juniper/openstack-helm-infra.git
   # Download contrail-helm-deployer code
-  git clone https://github.com/Juniper/contrail-helm-deployer.git
+  git clone https://github.com/tungstenfabric/tf-helm-deployer.git
   ```
 
 2. Export variables needed by below procedure
