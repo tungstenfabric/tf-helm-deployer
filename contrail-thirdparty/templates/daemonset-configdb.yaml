@@ -6,12 +6,15 @@
 {{- $serviceAccountName := "configdb" }}
 {{ tuple $context $dependencies $serviceAccountName | include "helm-toolkit.snippets.kubernetes_pod_rbac_serviceaccount" }}
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: contrail-configdb
 spec:
 {{ tuple $context "configdb" | include "helm-toolkit.snippets.kubernetes_upgrades_daemonset" | indent 2 }}
+  selector:
+    matchLabels:
+{{ tuple $context "opencontrail" "contrail-configdb" | include "helm-toolkit.snippets.kubernetes_metadata_labels" | indent 6 }}
   template:
     metadata:
       labels:
@@ -41,7 +44,7 @@ spec:
 {{ tuple $context $dependencies nil | include "helm-toolkit.snippets.kubernetes_entrypoint_init_container" | indent 8 }}
       containers:
       - name: contrail-configdb
-        image: {{ .Values.global.images.tags.cassandra | quote }}
+        image: {{ .Values.global.images.tags.contrail_external_cassandra | default (printf "%s/contrail-external-cassandra:%s" .Values.global.contrail_env.CONTAINER_REGISTRY .Values.global.contrail_env.CONTRAIL_CONTAINER_TAG ) | quote }}
         imagePullPolicy: {{ default "" .Values.global.images.imagePullPolicy | quote }}
         env:
         - name: NODE_TYPE
@@ -66,6 +69,68 @@ spec:
           name: configdb-data
         - mountPath: /etc/contrail/ssl
           name: ssl-dir
+
+
+      - name: contrail-configdb-nodemgr
+        image: {{ .Values.global.images.tags.contrail_nodemgr | default (printf "%s/contrail-nodemgr:%s" .Values.global.contrail_env.CONTAINER_REGISTRY .Values.global.contrail_env.CONTRAIL_CONTAINER_TAG ) | quote }}
+        imagePullPolicy: {{ default "" .Values.global.images.imagePullPolicy | quote }}
+        envFrom:
+        - configMapRef:
+            name: contrail-thirdparty-env
+{{- if .Values.manifests.configmap_thirdparty_keystone }}
+        - configMapRef:
+            name: contrail-thirdparty-keystone
+{{- end }}
+        env:
+        - name: NODE_TYPE
+          value: config-database
+        - name: DOCKER_HOST
+          value: "unix://mnt/docker.sock"
+        - name: CASSANDRA_CQL_PORT
+          value: {{ .Values.global.contrail_env.CONFIGDB_CQL_PORT | default 9041 | quote }}
+        - name: CASSANDRA_JMX_LOCAL_PORT
+          value: {{ .Values.global.contrail_env.CONFIGDB_JMX_LOCAL_PORT | default 7200 | quote }}
+        - name: KEYSTONE_AUTH_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.secrets.keystone.admin }}
+              key: KEYSTONE_AUTH_ADMIN_PASSWORD
+        volumeMounts:
+        - mountPath: /mnt/docker.sock
+          name: docker-unix-socket
+        - mountPath: /var/log/contrail/
+          name: contrail-log
+        - mountPath: /var/crashes
+          name: var-crashes-database
+        - mountPath: /etc/contrail/ssl
+          name: ssl-dir
+      - name: contrail-configdb-provisioner
+        image: {{ .Values.global.images.tags.contrail_provisioner | default (printf "%s/contrail-provisioner:%s" .Values.global.contrail_env.CONTAINER_REGISTRY .Values.global.contrail_env.CONTRAIL_CONTAINER_TAG ) | quote }}
+        imagePullPolicy: {{ default "" .Values.global.images.imagePullPolicy | quote }}
+        envFrom:
+        - configMapRef:
+            name: contrail-thirdparty-env
+        - configMapRef:
+            name: contrail-thirdparty-defaults
+{{- if .Values.manifests.configmap_thirdparty_keystone }}
+        - configMapRef:
+            name: contrail-thirdparty-keystone
+{{- end }}
+        env:
+        - name: NODE_TYPE
+          value: config-database
+        - name: KEYSTONE_AUTH_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.secrets.keystone.admin }}
+              key: KEYSTONE_AUTH_ADMIN_PASSWORD
+        volumeMounts:
+        - mountPath: /var/log/contrail/
+          name: contrail-log
+        - mountPath: /var/crashes
+          name: var-crashes-database
+        - mountPath: /etc/contrail/ssl
+          name: ssl-dir          
       volumes:
       - name: configdb-data
         hostPath:
@@ -73,4 +138,21 @@ spec:
       - name: ssl-dir
         hostPath:
           path: /etc/contrail/ssl
+      - name: docker-unix-socket
+        hostPath:
+          path: /var/run/docker.sock
+          type: Socket
+      - name: contrail-log
+        hostPath:
+          path: /var/log/contrail
+      - name: var-crashes-database
+        hostPath:
+          path: /var/crashes
+      - name: host-usr-bin
+        hostPath:
+          path: {{ .Values.volumeMounts.host_usr_bin.hostPath }}
+      - name: host-sysctld-dir
+        hostPath:
+          path: /etc/sysctl.d
+
 {{- end }}

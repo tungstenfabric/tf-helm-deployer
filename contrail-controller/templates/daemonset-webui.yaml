@@ -7,12 +7,15 @@
 {{ tuple $context $dependencies $serviceAccountName | include "helm-toolkit.snippets.kubernetes_pod_rbac_serviceaccount" }}
 {{ tuple $context $serviceAccountName | include "helm-toolkit.snippets.kubernetes_pod_rbac_csr_role" }}
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: contrail-webui
 spec:
 {{ tuple $context "webui" | include "helm-toolkit.snippets.kubernetes_upgrades_daemonset" | indent 2 }}
+  selector:
+    matchLabels:
+{{ tuple $context "opencontrail" "contrail-webui" | include "helm-toolkit.snippets.kubernetes_metadata_labels" | indent 6 }}
   template:
     metadata:
       labels:
@@ -41,13 +44,13 @@ spec:
       initContainers:
 {{ tuple $context $dependencies nil | include "helm-toolkit.snippets.kubernetes_entrypoint_init_container" | indent 8 }}
         - name: contrail-node-init
-          image: {{ .Values.global.images.tags.node_init | quote }}
+          image: {{ .Values.global.images.tags.contrail_node_init | default (printf "%s/contrail-node-init:%s" .Values.global.contrail_env.CONTAINER_REGISTRY .Values.global.contrail_env.CONTRAIL_CONTAINER_TAG) | quote }}
           imagePullPolicy: {{ default "" .Values.global.images.imagePullPolicy | quote }}
           securityContext:
             privileged: true
           env:
           - name: CONTRAIL_STATUS_IMAGE
-            value: {{ .Values.global.images.tags.contrail_status | quote }}
+            value: {{ .Values.global.images.tags.contrail_status | default (printf "%s/contrail-status:%s" .Values.global.contrail_env.CONTAINER_REGISTRY .Values.global.contrail_env.CONTRAIL_CONTAINER_TAG ) | quote }}
           envFrom:
           - configMapRef:
               name: contrail-controller-env
@@ -60,7 +63,7 @@ spec:
             name: host-sysctld-dir
       containers:
       - name: contrail-webui-middleware
-        image: {{ .Values.global.images.tags.webui_middleware | quote }}
+        image: {{ .Values.global.images.tags.contrail_controller_webui_job | default (printf "%s/contrail-controller-webui-job:%s" .Values.global.contrail_env.CONTAINER_REGISTRY .Values.global.contrail_env.CONTRAIL_CONTAINER_TAG )| quote }}
         imagePullPolicy: {{ default "" .Values.global.images.imagePullPolicy | quote }}
         ports:
         - name: http-port
@@ -93,7 +96,7 @@ spec:
           readOnly: true
         {{- end }}
       - name: contrail-webui
-        image: {{ .Values.global.images.tags.webui | quote }}
+        image: {{ .Values.global.images.tags.contrail_controller_webui_web | default (printf "%s/contrail-controller-webui-web:%s" .Values.global.contrail_env.CONTAINER_REGISTRY .Values.global.contrail_env.CONTRAIL_CONTAINER_TAG ) | quote }}
         imagePullPolicy: {{ default "" .Values.global.images.imagePullPolicy | quote }}
         envFrom:
         - configMapRef:
