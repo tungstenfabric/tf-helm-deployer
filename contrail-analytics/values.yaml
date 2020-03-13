@@ -1,15 +1,9 @@
 global:
   images:
     tags:
-      nodemgr: "docker.io/opencontrailnightly/contrail-nodemgr:latest"
-      contrail_status: "docker.io/opencontrailnightly/contrail-status:latest"
-      node_init: "docker.io/opencontrailnightly/contrail-node-init:latest"
-      analytics_api: "docker.io/opencontrailnightly/contrail-analytics-api:latest"
-      contrail_collector: "docker.io/opencontrailnightly/contrail-analytics-collector:latest"
-      analytics_alarm_gen: "docker.io/opencontrailnightly/contrail-analytics-alarm-gen:latest"
-      analytics_snmp_collector: "docker.io/opencontrailnightly/contrail-analytics-snmp-collector:latest"
-      contrail_topology: "docker.io/opencontrailnightly/contrail-analytics-snmp-topology:latest"
-      dep_check: quay.io/stackanetes/kubernetes-entrypoint:v0.2.1
+      # You can override container names here using container name as a tag. Just replace '-' in container name to '_'. See example:
+      #   contrail_external_kafka: "docker.io/opencontrailnightly/contrail-external-kafka:master-latest"
+      dep_check: quay.io/airshipit/kubernetes-entrypoint:v1.0.0
     imagePullPolicy: "IfNotPresent"
     # Specify imageCredentials
     imageCredentials:
@@ -18,6 +12,8 @@ global:
       # password: password
 
   contrail_env:
+    CONTAINER_REGISTRY: docker.io/opencontrailnightly
+    CONTRAIL_CONTAINER_TAG: master-latest
     CONTROLLER_NODES: 10.87.65.248
     LOG_LEVEL: SYS_NOTICE
     CLOUD_ORCHESTRATOR: openstack

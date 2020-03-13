@@ -7,46 +7,40 @@ global:
       # You can override container names here using container name as a tag. Just replace '-' in container name to '_'. See example:
       #   contrail_external_kafka: "docker.io/opencontrailnightly/contrail-external-kafka:master-latest"
       dep_check: quay.io/airshipit/kubernetes-entrypoint:v1.0.0
-    imagePullPolicy: "IfNotPresent"
-    # Specify imageCredentials
-    imageCredentials:
-      # registry: quay.io
-      # username: username
-      # password: password
-
 
   # contrail_env section for all containers
   contrail_env:
-    CONTROLLER_NODES: 6.6.6.6
-    LOG_LEVEL: SYS_NOTICE
-    CLOUD_ORCHESTRATOR: openstack
-    AAA_MODE: cloud-admin
-    ANALYTICSDB_ENABLE: "true"
-    ANALYTICS_ALARM_ENABLE: "true"
-    ANALYTICS_SNMP_ENABLE: "true"
+    CONTROLLER_NODES: 10.0.2.15
+    CLOUD_ORCHESTRATOR: kubernetes
+    AAA_MODE: no-auth
+    JVM_EXTRA_OPTS: "-Xms1g -Xmx2g"
+    KUBERNETES_PUBLIC_FIP_POOL: "{'project' : 'k8s-default', 'domain': 'default-domain', 'name': '__fip_pool_public__' , 'network' : '__public__'}"
   # Values from this section will be passed as ENV variables to all provisioner containers
   default_env:
-  #  VXLAN_VN_ID_MODE: "automatic"
-  # section of vrouter template for kernel mode
-  contrail_env_vrouter_kernel:
-    AGENT_MODE: kernel
-
-  # section of vrouter template for dpdk mode
-  contrail_env_vrouter_dpdk:
-    AGENT_MODE: dpdk
-    #CPU_CORE_MASK: "0xf"
-    #DPDK_UIO_DRIVER: uio_pci_generic
-    #HUGE_PAGES: 32000
-    #HUGE_PAGES_DIR: /dev/hugepages
-    #DPDK_MEM_PER_SOCKET: 1024
-
+    # VXLAN_VN_ID_MODE: "automatic"
   node:
-    host_os: ubuntu
+    host_os: centos
 
 # Chart level variables like manifests, labels which are local to subchart
 # Can be updated from the parent chart like below
 # Example of overriding values of subchart, where contrail-vrouter is name of the subchart
 contrail-vrouter:
   manifests:
-    configmap_vrouter_dpdk: false
-    daemonset_dpdk: false
+    configmap_vrouter_keystone: false
+    job_kubernetes_cni_init: true
+
+contrail-analytics:
+  manifests:
+    configmap_analytics_keystone: false
+    configmap_controller_rabbitmq: false
+
+contrail-controller:
+  manifests:
+    configmap_controller_keystone: false
+    daemonset_kube_manager: true
+    configmap_controller_rabbitmq: false
+
+contrail-thirdparty:
+  manifests:
+    configmap_thirdparty_keystone: false
+

@@ -7,12 +7,15 @@
 {{ tuple $context $dependencies $serviceAccountName | include "helm-toolkit.snippets.kubernetes_pod_rbac_serviceaccount" }}
 {{ tuple $context $serviceAccountName | include "helm-toolkit.snippets.kubernetes_pod_rbac_csr_role" }}
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: contrail-control-only
 spec:
 {{ tuple $context "control_only" | include "helm-toolkit.snippets.kubernetes_upgrades_daemonset" | indent 2 }}
+  selector:
+    matchLabels:
+{{ tuple $context "opencontrail" "contrail-control-only" | include "helm-toolkit.snippets.kubernetes_metadata_labels" | indent 6 }}
   template:
     metadata:
       labels:
@@ -41,13 +44,13 @@ spec:
       initContainers:
 {{ tuple $context $dependencies nil | include "helm-toolkit.snippets.kubernetes_entrypoint_init_container" | indent 8 }}
         - name: contrail-node-init
-          image: {{ .Values.global.images.tags.node_init | quote }}
+          image: {{ .Values.global.images.tags.contrail_node_init | default (printf "%s/contrail-node-init:%s" .Values.global.contrail_env.CONTAINER_REGISTRY .Values.global.contrail_env.CONTRAIL_CONTAINER_TAG) | quote }}
           imagePullPolicy: {{ default "" .Values.global.images.imagePullPolicy | quote }}
           securityContext:
             privileged: true
           env:
           - name: CONTRAIL_STATUS_IMAGE
-            value: {{ .Values.global.images.tags.contrail_status | quote }}
+            value: {{ .Values.global.images.tags.contrail_status | default (printf "%s/contrail-status:%s" .Values.global.contrail_env.CONTAINER_REGISTRY .Values.global.contrail_env.CONTRAIL_CONTAINER_TAG ) | quote }}
           envFrom:
           - configMapRef:
               name: contrail-controller-env
@@ -60,7 +63,7 @@ spec:
             name: host-sysctld-dir
       containers:
       - name: contrail-control
-        image: {{ .Values.global.images.tags.contrail_control | quote }}
+        image: {{ .Values.global.images.tags.contrail_controller_control_control | default (printf "%s/contrail-controller-control-control:%s" .Values.global.contrail_env.CONTAINER_REGISTRY .Values.global.contrail_env.CONTRAIL_CONTAINER_TAG ) | quote }}
         imagePullPolicy: {{ default "" .Values.global.images.imagePullPolicy | quote }}
         envFrom:
         - configMapRef:

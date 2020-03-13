@@ -19,15 +19,6 @@ data:
   {{- range $key, $value := .Values.global.contrail_env }}
   {{ $key }}: {{ $value | quote }}
   {{- end }}
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: contrail-xflow-configuration
-data:
-  {{- range $key, $value := .Values.global.contrail_env_xflow_configuration }}
-  {{ $key }}: {{ $value | quote }}
-  {{- end }}
 {{- end }}
 
 {{- if .Values.manifests.configmap_vrouter_kernel }}
@@ -75,7 +66,15 @@ data:
 {{- end }}
 {{- end }}
 
-
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: contrail-vrouter-defaults
+data:
+  {{- range $key, $value := .Values.global.default_env }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}
 {{- if .Values.manifests.configmap_vrouter_keystone }}
 ---
 apiVersion: v1
@@ -94,4 +93,3 @@ data:
   KEYSTONE_AUTH_PUBLIC_PORT: {{ .Values.endpoints.keystone.port.api.default | quote }}
   KEYSTONE_AUTH_REGION_NAME: {{ .Values.endpoints.keystone.auth.region_name | quote }}
 {{- end }}
-

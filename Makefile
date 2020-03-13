@@ -1,7 +1,6 @@
 
 HELM := helm
-FILTER_CHARTS := helm-toolkit-contrail
-CONTRAIL_CHARTS := $(FILTER_CHARTS) $(filter-out $(FILTER_CHARTS), $(patsubst %/Chart.yaml, %, $(wildcard */Chart.yaml)))
+CONTRAIL_CHARTS := helm-toolkit-contrail contrail-vrouter contrail-thirdparty contrail-controller contrail-analytics contrail contrail-k8s
 BUILD_CHARTS := $(foreach chart, $(CONTRAIL_CHARTS), build-$(chart))
 
 .phony: all

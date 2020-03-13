@@ -7,12 +7,15 @@
 {{ tuple $context $dependencies $serviceAccountName | include "helm-toolkit.snippets.kubernetes_pod_rbac_serviceaccount" }}
 {{ tuple $context $serviceAccountName | include "helm-toolkit.snippets.kubernetes_pod_rbac_csr_role" }}
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: contrail-analytics-alarm
 spec:
 {{ tuple $context "analytics-alarm" | include "helm-toolkit.snippets.kubernetes_upgrades_daemonset" | indent 2 }}
+  selector:
+    matchLabels:
+{{ tuple $context "opencontrail" "contrail-analytics-alarm" | include "helm-toolkit.snippets.kubernetes_metadata_labels" | indent 6 }}
   template:
     metadata:
       labels:
@@ -41,13 +44,13 @@ spec:
       initContainers:
 {{ tuple $context $dependencies nil | include "helm-toolkit.snippets.kubernetes_entrypoint_init_container" | indent 8 }}
         - name: contrail-node-init
-          image: {{ .Values.global.images.tags.node_init | quote }}
+          image: {{ .Values.global.images.tags.contrail_node_init | default (printf "%s/contrail-node-init:%s" .Values.global.contrail_env.CONTAINER_REGISTRY .Values.global.contrail_env.CONTRAIL_CONTAINER_TAG ) | quote }}
           imagePullPolicy: {{ default "" .Values.global.images.imagePullPolicy | quote }}
           securityContext:
             privileged: true
           env:
           - name: CONTRAIL_STATUS_IMAGE
-            value: {{ .Values.global.images.tags.contrail_status | quote }}
+            value: {{ .Values.global.images.tags.contrail_status | default ( printf "%s/contrail-status:%s" .Values.global.contrail_env.CONTAINER_REGISTRY .Values.global.contrail_env.CONTRAIL_CONTAINER_TAG ) | quote }}
           envFrom:
           - configMapRef:
               name: contrail-analytics-env
@@ -60,7 +63,7 @@ spec:
             name: host-sysctld-dir
       containers:
       - name: contrail-alarm-gen
-        image: {{ .Values.global.images.tags.analytics_alarm_gen | quote }}
+        image: {{ .Values.global.images.tags.contrail_analytics_alarm_gen | default ( printf "%s/contrail-analytics-alarm-gen:%s" .Values.global.contrail_env.CONTAINER_REGISTRY .Values.global.contrail_env.CONTRAIL_CONTAINER_TAG )| quote }}
         imagePullPolicy: {{ default "" .Values.global.images.imagePullPolicy | quote }}
         envFrom:
         - configMapRef:
@@ -84,8 +87,9 @@ spec:
           name: contrail-log
         - mountPath: /var/crashes
           name: var-crashes-analytics
+
       - name: contrail-analytics-alarm-nodemgr
-        image: {{ .Values.global.images.tags.nodemgr | quote }}
+        image: {{ .Values.global.images.tags.contrail_nodemgr | default (printf "%s/contrail-nodemgr:%s" .Values.global.contrail_env.CONTAINER_REGISTRY .Values.global.contrail_env.CONTRAIL_CONTAINER_TAG ) | quote }}
         imagePullPolicy: {{ default "" .Values.global.images.imagePullPolicy | quote }}
         envFrom:
         - configMapRef:
@@ -113,6 +117,34 @@ spec:
           name: docker-unix-socket
         - mountPath: /etc/contrail/ssl
           name: ssl-dir
+
+      - name: contrail-analytics-alarm-provisioner
+        image: {{ .Values.global.images.tags.contrail_provisioner | default (printf "%s/contrail-provisioner:%s" .Values.global.contrail_env.CONTAINER_REGISTRY .Values.global.contrail_env.CONTRAIL_CONTAINER_TAG ) | quote }}
+        imagePullPolicy: {{ default "" .Values.global.images.imagePullPolicy | quote }}
+        envFrom:
+        - configMapRef:
+            name: contrail-analytics-env
+        - configMapRef:
+            name: contrail-analytics-defaults
+{{- if .Values.manifests.configmap_analytics_keystone }}
+        - configMapRef:
+            name: contrail-analytics-keystone
+{{- end }}
+        env:
+        - name: NODE_TYPE
+          value: analytics-alarm
+        - name: KEYSTONE_AUTH_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.secrets.keystone.admin }}
+              key: KEYSTONE_AUTH_ADMIN_PASSWORD
+        volumeMounts:
+        - mountPath: /var/log/contrail/
+          name: contrail-log
+        - mountPath: /var/crashes
+          name: var-crashes-analytics
+        - mountPath: /etc/contrail/ssl
+          name: ssl-dir         
       volumes:
       - name: docker-unix-socket
         hostPath:

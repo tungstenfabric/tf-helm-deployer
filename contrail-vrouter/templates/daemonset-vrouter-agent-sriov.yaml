@@ -17,12 +17,15 @@
 {{ tuple $context $dependencies $serviceAccountName | include "helm-toolkit.snippets.kubernetes_pod_rbac_serviceaccount" }}
 {{ tuple $context $serviceAccountName | include "helm-toolkit.snippets.kubernetes_pod_rbac_csr_role" }}
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: {{ $daemonset_name }}
 spec:
 {{ tuple $context "vrouter_agent_sriov" | include "helm-toolkit.snippets.kubernetes_upgrades_daemonset" | indent 2 }}
+  selector:
+    matchLabels:
+{{ tuple $context "opencontrail" "contrail-vrouter-agent-sriov" | include "helm-toolkit.snippets.kubernetes_metadata_labels" | indent 6 }}
   template:
     metadata:
       labels:
@@ -50,6 +53,9 @@ spec:
       - key: node-role.kubernetes.io/master
         operator: Exists
         effect: NoSchedule
+      - key: node.kubernetes.io/not-ready
+        operator: Exists
+        effect: NoSchedule
       hostNetwork: true
       dnsPolicy: ClusterFirstWithHostNet
       imagePullSecrets:
@@ -57,13 +63,13 @@ spec:
       initContainers:
 {{ tuple $context $dependencies nil | include "helm-toolkit.snippets.kubernetes_entrypoint_init_container" | indent 8 }}
         - name: contrail-node-init
-          image: {{ $context.Values.global.images.tags.node_init | quote }}
+          image: {{ $context.Values.global.images.tags.contrail_node_init | default ( printf "%s/contrail-node-init:%s" $context.Values.global.contrail_env.CONTAINER_REGISTRY $context.Values.global.contrail_env.CONTRAIL_CONTAINER_TAG ) | quote }}
           imagePullPolicy: {{ default "" $context.Values.global.images.imagePullPolicy | quote }}
           securityContext:
             privileged: true
           env:
           - name: CONTRAIL_STATUS_IMAGE
-            value: {{ $context.Values.global.images.tags.contrail_status | quote }}
+            value: {{ $context.Values.global.images.tags.contrail_status | default ( printf "%s/contrail-status:%s" $context.Values.global.contrail_env.CONTAINER_REGISTRY $context.Values.global.contrail_env.CONTRAIL_CONTAINER_TAG ) | quote }}
           envFrom:
           - configMapRef:
               name: contrail-vrouter
@@ -79,7 +85,7 @@ spec:
 {{- if and $agent_mode ( eq $agent_mode "kernel" ) }}
 {{- if eq $host_os "ubuntu"}}
         - name: contrail-vrouter-init-kernel
-          image: {{ $context.Values.global.images.tags.build_driver_init | quote }}
+          image: {{ $context.Values.global.images.tags.contrail_vrouter_kernel_build_init | default ( printf "%s/contrail-vrouter-kernel-build-init:%s" $context.Values.global.contrail_env.CONTAINER_REGISTRY $context.Values.global.contrail_env.CONTRAIL_CONTAINER_TAG ) |  quote }}
           imagePullPolicy: {{ default "" $context.Values.global.images.imagePullPolicy | quote }}
           securityContext:
             privileged: true
@@ -88,8 +94,6 @@ spec:
               name: contrail-vrouter
           - configMapRef:
               name: contrail-vrouter-kernel
-          - configMapRef:
-              name: contrail-xflow-configuration
 {{- if .Values.manifests.configmap_vrouter_keystone }}
           - configMapRef:
               name: contrail-vrouter-keystone
@@ -109,7 +113,7 @@ spec:
             name: host-bin
 {{- else if $host_os "centos" }}
         - name: contrail-vrouter-init-kernel
-          image: {{ $context.Values.global.images.tags.vrouter_init_kernel | quote }}
+          image: {{ $context.Values.global.images.tags.contrail_vrouter_kernel_init | default ( printf "%s/contrail-vrouter-kernel-init:%s" $context.Values.global.contrail_env.CONTAINER_REGISTRY $context.Values.global.contrail_env.CONTRAIL_CONTAINER_TAG ) | quote }}
           imagePullPolicy: {{ default "" $context.Values.global.images.imagePullPolicy | quote }}
           securityContext:
             privileged: true
@@ -118,8 +122,6 @@ spec:
               name: configmap-vrouter
           - configMapRef:
               name: configmap-vrouter-kernel
-          - configMapRef:
-              name: contrail-xflow-configuration
 {{- if .Values.manifests.configmap_vrouter_keystone }}
           - configMapRef:
               name: contrail-vrouter-keystone
@@ -141,7 +143,7 @@ spec:
 {{- else if and $agent_mode ( eq $agent_mode "dpdk" ) }}
 {{- if and (eq $host_os "ubuntu") (eq $uio_driver "mlnx") }}
         - name: contrail-vrouter-plugin-mellanox-init
-          image: {{ $context.Values.global.images.tags.vrouter_plugin_mellanox_init | quote }}
+          image: {{ $context.Values.global.images.tags.contrail_vrouter_plugin_mellanox_init_ubuntu | default (printf "%s/contrail-vrouter-plugin-mellanox-init-ubuntu:%s" $context.Values.global.contrail_env.CONTAINER_REGISTRY $context.Values.global.contrail_env.CONTRAIL_CONTAINER_TAG ) | quote }}
           imagePullPolicy: {{ default "" $context.Values.global.images.imagePullPolicy | quote }}
           securityContext:
             privileged: true
@@ -157,7 +159,7 @@ spec:
             name: usr-src
 {{- end }}
         - name: contrail-vrouter-init-dpdk
-          image: {{ $context.Values.global.images.tags.vrouter_init_dpdk | quote }}
+          image: {{ $context.Values.global.images.tags.contrail_vrouter_kernel_init_dpdk | default (printf "%s/contrail-vrouter-kernel-init-dpdk:%s" $context.Values.global.contrail_env.CONTAINER_REGISTRY $context.Values.global.contrail_env.CONTRAIL_CONTAINER_TAG) | quote }}
           imagePullPolicy: {{ default "" $context.Values.global.images.imagePullPolicy | quote }}
           securityContext:
             privileged: true
@@ -166,8 +168,6 @@ spec:
               name: contrail-vrouter
           - configMapRef:
               name: contrail-vrouter-dpdk
-          - configMapRef:
-              name: contrail-xflow-configuration
 {{- if .Values.manifests.configmap_vrouter_keystone }}
           - configMapRef:
               name: contrail-vrouter-keystone
@@ -192,7 +192,7 @@ spec:
 {{- end }}
 {{- if .Values.manifests.job_kubernetes_cni_init }}
         - name: contrail-kubernetes-cni-init
-          image: {{ .Values.global.images.tags.kubernetes_cni_init | quote }}
+          image: {{ .Values.global.images.tags.contrail_kubernetes_cni_init | default (printf "%s/contrail-kubernetes-cni-init:%s" .Values.global.contrail_env.CONTAINER_REGISTRY .Values.global.contrail_env.CONTRAIL_CONTAINER_TAG) | quote }}
           imagePullPolicy: {{ default "" .Values.global.images.imagePullPolicy | quote }}
           envFrom:
           - configMapRef:
@@ -211,7 +211,7 @@ spec:
       containers:
 {{- if and $agent_mode ( eq $agent_mode "dpdk" ) }}
         - name: contrail-vrouter-dpdk
-          image: {{ $context.Values.global.images.tags.vrouter_dpdk | quote }}
+          image: {{ $context.Values.global.images.tags.contrail_vrouter_agent_dpdk | default (printf "%s/contrail-vrouter-agent-dpdk:%s" $context.Values.global.contrail_env.CONTAINER_REGISTRY $context.Values.global.contrail_env.CONTRAIL_CONTAINER_TAG ) | quote }}
           imagePullPolicy: {{ default "" $context.Values.global.images.imagePullPolicy | quote }}
           securityContext:
             privileged: true
@@ -220,8 +220,6 @@ spec:
               name: contrail-vrouter
           - configMapRef:
               name: contrail-vrouter-dpdk
-          - configMapRef:
-              name: contrail-xflow-configuration
 {{- if .Values.manifests.configmap_vrouter_keystone }}
           - configMapRef:
               name: contrail-vrouter-keystone
@@ -253,7 +251,7 @@ spec:
             name: var-crashes-vrouter
 {{- end }}
       - name: contrail-vrouter-agent
-        image: {{ $context.Values.global.images.tags.vrouter_agent | quote }}
+        image: {{ $context.Values.global.images.tags.contrail_vrouter_agent | default ( printf "%s/contrail-vrouter-agent:%s" $context.Values.global.contrail_env.CONTAINER_REGISTRY $context.Values.global.contrail_env.CONTRAIL_CONTAINER_TAG ) | quote }}
         imagePullPolicy: {{ default "" $context.Values.global.images.imagePullPolicy | quote }}
         securityContext:
           privileged: true
@@ -262,8 +260,6 @@ spec:
             name: contrail-vrouter
         - configMapRef:
             name: {{ $config_map_name }}
-        - configMapRef:
-            name: contrail-xflow-configuration
 {{- if .Values.manifests.configmap_vrouter_keystone }}
         - configMapRef:
             name: contrail-vrouter-keystone
@@ -295,16 +291,16 @@ spec:
           name: var-run
         - mountPath: /etc/contrail/ssl
           name: ssl-dir
+        - mountPath: /host/etc
+          name: host-etc
       - name: contrail-vrouter-nodemgr
-        image: {{ $context.Values.global.images.tags.nodemgr | quote }}
+        image: {{ $context.Values.global.images.tags.contrail_nodemgr | default ( printf "%s/contrail-nodemgr:%s" $context.Values.global.contrail_env.CONTAINER_REGISTRY $context.Values.global.contrail_env.CONTRAIL_CONTAINER_TAG ) | quote }}
         imagePullPolicy: {{ default "" $context.Values.global.images.imagePullPolicy | quote }}
         envFrom:
         - configMapRef:
             name: contrail-vrouter
         - configMapRef:
             name: {{ $config_map_name }}
-        - configMapRef:
-            name: contrail-xflow-configuration
 {{- if .Values.manifests.configmap_vrouter_keystone }}
         - configMapRef:
             name: contrail-vrouter-keystone
@@ -322,6 +318,35 @@ spec:
         volumeMounts:
         - mountPath: /mnt/docker.sock
           name: docker-unix-socket
+        - mountPath: /var/log/contrail/
+          name: contrail-log
+        - mountPath: /var/crashes
+          name: var-crashes-vrouter
+        - mountPath: /etc/contrail/ssl
+          name: ssl-dir
+      - name: contrail-vrouter-provisioner
+        image: {{ $context.Values.global.images.tags.contrail_provisioner | default ( printf "%s/contrail-provisioner:%s" $context.Values.global.contrail_env.CONTAINER_REGISTRY $context.Values.global.contrail_env.CONTRAIL_CONTAINER_TAG ) | quote }}
+        imagePullPolicy: {{ default "" $context.Values.global.images.imagePullPolicy | quote }}
+        envFrom:
+        - configMapRef:
+            name: contrail-vrouter
+        - configMapRef:
+            name: {{ $config_map_name }}
+        - configMapRef:
+            name: contrail-vrouter-defaults
+{{- if .Values.manifests.configmap_vrouter_keystone }}
+        - configMapRef:
+            name: contrail-vrouter-keystone
+{{- end }}
+        env:
+        - name: NODE_TYPE
+          value: vrouter
+        - name: KEYSTONE_AUTH_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.secrets.keystone.admin }}
+              key: KEYSTONE_AUTH_ADMIN_PASSWORD
+        volumeMounts:
         - mountPath: /var/log/contrail/
           name: contrail-log
         - mountPath: /var/crashes
@@ -381,6 +406,9 @@ spec:
       - name: host-sysctld-dir
         hostPath:
           path: /etc/sysctl.d
+      - name: host-etc
+        hostPath:
+          path: /etc
 {{- if .Values.manifests.job_kubernetes_cni_init }}
       - name: etc-cni
         hostPath:

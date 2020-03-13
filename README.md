@@ -1,5 +1,7 @@
 # Contrail Helm based deployment
 
+IMPORTANT: This is a temporary fork of Juniper/contrail-helm-deployer, created until the original repo is migrated along with the rest of Contrail to tunstenfabric-tools/helm-deployer. This one is used by tf-devstack for now.
+
 This repo consists of contrail helm charts which helps to deploy contrail networking components as microservices
 
 ___

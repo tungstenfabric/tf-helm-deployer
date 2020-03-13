@@ -32,12 +32,15 @@ subjects:
     name: {{ $serviceAccountName }}
     namespace: {{ .Release.Namespace }}
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: contrail-kube-manager
 spec:
 {{ tuple $context "kube_manager" | include "helm-toolkit.snippets.kubernetes_upgrades_daemonset" | indent 2 }}
+  selector:
+    matchLabels:
+{{ tuple $context "opencontrail" "contrail-kube-manager" | include "helm-toolkit.snippets.kubernetes_metadata_labels" | indent 6 }}
   template:
     metadata:
       labels:
@@ -66,13 +69,13 @@ spec:
       initContainers:
 {{ tuple $context $dependencies nil | include "helm-toolkit.snippets.kubernetes_entrypoint_init_container" | indent 8 }}
         - name: contrail-node-init
-          image: {{ .Values.global.images.tags.node_init | quote }}
+          image: {{ .Values.global.images.tags.contrail_node_init | default (printf "%s/contrail-node-init:%s" .Values.global.contrail_env.CONTAINER_REGISTRY .Values.global.contrail_env.CONTRAIL_CONTAINER_TAG) | quote }}
           imagePullPolicy: {{ default "" .Values.global.images.imagePullPolicy | quote }}
           securityContext:
             privileged: true
           env:
           - name: CONTRAIL_STATUS_IMAGE
-            value: {{ .Values.global.images.tags.contrail_status | quote }}
+            value: {{ .Values.global.images.tags.contrail_status | default (printf "%s/contrail-status:%s" .Values.global.contrail_env.CONTAINER_REGISTRY .Values.global.contrail_env.CONTRAIL_CONTAINER_TAG ) | quote }}
           envFrom:
           - configMapRef:
               name: contrail-controller-env
@@ -85,7 +88,7 @@ spec:
             name: host-sysctld-dir
       containers:
       - name: contrail-kube-manager
-        image: {{ .Values.global.images.tags.kube_manager | quote }}
+        image: {{ .Values.global.images.tags.contrail_kubernetes_kube_manager | default (printf "%s/contrail-kubernetes-kube-manager:%s" .Values.global.contrail_env.CONTAINER_REGISTRY .Values.global.contrail_env.CONTRAIL_CONTAINER_TAG ) | quote }}
         imagePullPolicy: {{ default "" .Values.global.images.imagePullPolicy | quote }}
         envFrom:
         - configMapRef:

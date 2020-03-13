@@ -34,7 +34,7 @@ Install below packages on your setup
   # Download openstack-helm-infra code
   git clone https://github.com/Juniper/openstack-helm-infra.git
   # Download contrail-helm-deployer code
-  git clone https://github.com/tungstenfabric/tf-helm-deployer.git
+  git clone https://github.com/Juniper/contrail-helm-deployer.git
   ```
 
 2. Export variables needed by below procedure
@@ -162,7 +162,7 @@ Edit `${OSH_INFRA_PATH}/tools/gate/devel/local-vars.yaml` if you would want to i
         daemonset_analytics_alarm: false
 
  ```
-
+```
   tee /tmp/contrail.yaml << EOF
   global:
     contrail_env:
@@ -200,7 +200,7 @@ Edit `${OSH_INFRA_PATH}/tools/gate/devel/local-vars.yaml` if you would want to i
         node_init: "${CONTRAIL_REGISTRY:-opencontrailnightly}/contrail-node-init:${CONTRAIL_TAG:-latest}"
         dep_check: quay.io/stackanetes/kubernetes-entrypoint:v0.2.1
 EOF
-
+```
 ```bash
 # [Optional] only if you are pulling contrail images from a private registry
 tee /tmp/contrail-registry-auth.yaml << EOF

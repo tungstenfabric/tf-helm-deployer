@@ -7,12 +7,15 @@
 {{ tuple $context $dependencies $serviceAccountName | include "helm-toolkit.snippets.kubernetes_pod_rbac_serviceaccount" }}
 {{ tuple $context $serviceAccountName | include "helm-toolkit.snippets.kubernetes_pod_rbac_csr_role" }}
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: contrail-control
 spec:
 {{ tuple $context "control" | include "helm-toolkit.snippets.kubernetes_upgrades_daemonset" | indent 2 }}
+  selector:
+    matchLabels:
+{{ tuple $context "opencontrail" "contrail-control" | include "helm-toolkit.snippets.kubernetes_metadata_labels" | indent 6 }}
   template:
     metadata:
       labels:
@@ -42,13 +45,13 @@ spec:
       initContainers:
 {{ tuple $context $dependencies nil | include "helm-toolkit.snippets.kubernetes_entrypoint_init_container" | indent 8 }}
         - name: contrail-node-init
-          image: {{ .Values.global.images.tags.node_init | quote }}
+          image: {{ .Values.global.images.tags.contrail_node_init | default (printf "%s/contrail-node-init:%s" .Values.global.contrail_env.CONTAINER_REGISTRY .Values.global.contrail_env.CONTRAIL_CONTAINER_TAG) | quote }}
           imagePullPolicy: {{ default "" .Values.global.images.imagePullPolicy | quote }}
           securityContext:
             privileged: true
           env:
           - name: CONTRAIL_STATUS_IMAGE
-            value: {{ .Values.global.images.tags.contrail_status | quote }}
+            value: {{ .Values.global.images.tags.contrail_status | default (printf "%s/contrail-status:%s" .Values.global.contrail_env.CONTAINER_REGISTRY .Values.global.contrail_env.CONTRAIL_CONTAINER_TAG ) | quote }}
           envFrom:
           - configMapRef:
               name: contrail-controller-env
@@ -61,7 +64,7 @@ spec:
             name: host-sysctld-dir
       containers:
       - name: contrail-control
-        image: {{ .Values.global.images.tags.contrail_control | quote }}
+        image: {{ .Values.global.images.tags.contrail_controller_control_control | default (printf "%s/contrail-controller-control-control:%s" .Values.global.contrail_env.CONTAINER_REGISTRY .Values.global.contrail_env.CONTRAIL_CONTAINER_TAG ) | quote }}
         imagePullPolicy: {{ default "" .Values.global.images.imagePullPolicy | quote }}
         envFrom:
         - configMapRef:
@@ -88,7 +91,7 @@ spec:
         - mountPath: /etc/contrail/ssl
           name: ssl-dir
       - name: contrail-dns
-        image: {{ .Values.global.images.tags.control_dns | quote }}
+        image: {{ .Values.global.images.tags.contrail_controller_control_dns | default (printf "%s/contrail-controller-control-dns:%s" .Values.global.contrail_env.CONTAINER_REGISTRY .Values.global.contrail_env.CONTRAIL_CONTAINER_TAG ) | quote }}
         imagePullPolicy: {{ default "" .Values.global.images.imagePullPolicy | quote }}
         envFrom:
         - configMapRef:
@@ -115,7 +118,7 @@ spec:
         - mountPath: /var/crashes
           name: var-crashes-control
       - name: contrail-named
-        image: {{ .Values.global.images.tags.control_named | quote }}
+        image: {{ .Values.global.images.tags.contrail_controller_control_named | default (printf "%s/contrail-controller-control-named:%s" .Values.global.contrail_env.CONTAINER_REGISTRY .Values.global.contrail_env.CONTRAIL_CONTAINER_TAG ) | quote }}
         imagePullPolicy: {{ default "" .Values.global.images.imagePullPolicy | quote }}
         securityContext:
           privileged: true
@@ -143,12 +146,16 @@ spec:
           name: etc-contrail-dns
         - mountPath: /var/crashes
           name: var-crashes-control
+
+
       - name: contrail-control-nodemgr
-        image: {{ .Values.global.images.tags.nodemgr | quote }}
+        image: {{ .Values.global.images.tags.contrail_nodemgr | default (printf "%s/contrail-nodemgr:%s" .Values.global.contrail_env.CONTAINER_REGISTRY .Values.global.contrail_env.CONTRAIL_CONTAINER_TAG ) | quote }}
         imagePullPolicy: {{ default "" .Values.global.images.imagePullPolicy | quote }}
         envFrom:
         - configMapRef:
             name: contrail-controller-env
+        - configMapRef:
+            name: contrail-controller-defaults
 {{- if .Values.manifests.configmap_controller_keystone }}
         - configMapRef:
             name: contrail-controller-keystone
@@ -166,6 +173,33 @@ spec:
         volumeMounts:
         - mountPath: /mnt/docker.sock
           name: docker-unix-socket
+        - mountPath: /var/log/contrail/
+          name: contrail-log
+        - mountPath: /var/crashes
+          name: var-crashes-control
+        - mountPath: /etc/contrail/ssl
+          name: ssl-dir
+      - name: contrail-control-provisioner
+        image: {{ .Values.global.images.tags.contrail_provisioner | default (printf "%s/contrail-provisioner:%s" .Values.global.contrail_env.CONTAINER_REGISTRY .Values.global.contrail_env.CONTRAIL_CONTAINER_TAG ) | quote }}
+        imagePullPolicy: {{ default "" .Values.global.images.imagePullPolicy | quote }}
+        envFrom:
+        - configMapRef:
+            name: contrail-controller-env
+        - configMapRef:
+            name: contrail-controller-defaults
+{{- if .Values.manifests.configmap_controller_keystone }}
+        - configMapRef:
+            name: contrail-controller-keystone
+{{- end }}
+        env:
+        - name: NODE_TYPE
+          value: control
+        - name: KEYSTONE_AUTH_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.secrets.keystone.admin }}
+              key: KEYSTONE_AUTH_ADMIN_PASSWORD
+        volumeMounts:
         - mountPath: /var/log/contrail/
           name: contrail-log
         - mountPath: /var/crashes
