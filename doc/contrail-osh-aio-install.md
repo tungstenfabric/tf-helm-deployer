@@ -43,7 +43,7 @@ Install below packages on your setup
   export BASE_DIR=$(pwd)
   export OSH_PATH=${BASE_DIR}/openstack-helm
   export OSH_INFRA_PATH=${BASE_DIR}/openstack-helm-infra
-  export CHD_PATH=${BASE_DIR}/contrail-helm-deployer
+  export CHD_PATH=${BASE_DIR}/tf-helm-deployer
   ```
 
 2. Installing necessary packages and deploying kubernetes
