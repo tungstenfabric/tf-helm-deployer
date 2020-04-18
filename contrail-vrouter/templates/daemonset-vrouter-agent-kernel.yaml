@@ -127,6 +127,8 @@ spec:
             name: network-scripts
           - mountPath: /host/bin
             name: host-bin
+          - mountPath: /etc/dhcp
+            name: etc-dhcp
 {{- end }}
 {{- if .Values.manifests.job_kubernetes_cni_init }}
         - name: contrail-kubernetes-cni-init
