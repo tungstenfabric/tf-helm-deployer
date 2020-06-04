@@ -69,6 +69,8 @@ spec:
           name: config-zookeeper-datalog
         - mountPath: /etc/contrail/ssl
           name: ssl-dir
+        - mountPath: /var/log/zookeeper
+          name: config-zookeeper-log
       volumes:
       - name: config-zookeeper-data
         hostPath:
@@ -79,4 +81,7 @@ spec:
       - name: ssl-dir
         hostPath:
           path: /etc/contrail/ssl
+      - name: config-zookeeper-log
+        hostPath:
+          path: /var/log/contrail/config-zookeeper
 {{- end }}
