@@ -69,6 +69,8 @@ spec:
           name: configdb-data
         - mountPath: /etc/contrail/ssl
           name: ssl-dir
+        - mountPath: /var/log/cassandra
+          name: configdb-log
 
 
       - name: contrail-configdb-nodemgr
@@ -130,7 +132,7 @@ spec:
         - mountPath: /var/crashes
           name: var-crashes-database
         - mountPath: /etc/contrail/ssl
-          name: ssl-dir          
+          name: ssl-dir
       volumes:
       - name: configdb-data
         hostPath:
@@ -154,5 +156,8 @@ spec:
       - name: host-sysctld-dir
         hostPath:
           path: /etc/sysctl.d
+      - name: configdb-log
+        hostPath:
+          path: /var/log/contrail/config-database
 
 {{- end }}

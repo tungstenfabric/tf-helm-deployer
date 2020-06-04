@@ -64,4 +64,12 @@ spec:
           initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
+        volumeMounts:
+        - mountPath: /var/log/kafka
+          name: kafka-log
+      volumes:
+      - name: kafka-log
+        hostPath:
+          path: /var/log/contrail/kafka
+
 {{- end }}

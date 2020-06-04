@@ -63,4 +63,11 @@ spec:
             command: ["rabbitmqctl", "status"]
           initialDelaySeconds: 20
           periodSeconds: 60
+        volumeMounts:
+        - mountPath: /var/log/rabbitmq
+          name: rabbitmq
+      volumes:
+      - name: rabbitmq
+        hostPath:
+          path: /var/log/contrail/rabbitmq
 {{- end }}
