@@ -69,6 +69,8 @@ spec:
           name: analyticsdb-data
         - mountPath: /etc/contrail/ssl
           name: ssl-dir
+        - mountPath: /var/log/cassandra
+          name: cassandra-analyticsdb-log
       - name: contrail-query-engine
         image: {{ .Values.global.images.tags.contrail_analytics_query_engine | default (printf "%s/contrail-analytics-query-engine:%s" .Values.global.contrail_env.CONTAINER_REGISTRY .Values.global.contrail_env.CONTRAIL_CONTAINER_TAG ) | quote }}
         imagePullPolicy: {{ default "" .Values.global.images.imagePullPolicy | quote }}
@@ -175,5 +177,8 @@ spec:
           path: {{ .Values.volumeMounts.host_usr_bin.hostPath }}
       - name: host-sysctld-dir
         hostPath:
-          path: /etc/sysctl.d          
+          path: /etc/sysctl.d
+      - name: cassandra-analyticsdb-log
+        hostPath:
+          path: /var/log/contrail/cassandra-analyticsdb-log
 {{- end }}
