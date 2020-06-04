@@ -49,6 +49,10 @@ spec:
         env:
         - name: NODE_TYPE
           value: "config-database"
+        - name: RABBITMQ_LOGS
+          value: "/var/log/rabbitmq/rabbitmq.log"
+        - name: RAMMITMQ_SASL_LOGS
+          value: "/var/log/rabbitmq/rabbitmq_sasl.log"
         envFrom:
         - configMapRef:
             name: contrail-thirdparty-env
@@ -63,4 +67,11 @@ spec:
             command: ["rabbitmqctl", "status"]
           initialDelaySeconds: 20
           periodSeconds: 60
+        volumeMounts:
+        - mountPath: /var/log/rabbitmq
+          name: rabbitmq
+      volumes:
+      - name: rabbitmq
+        hostPath:
+          path: /var/log/contrail/rabbitmq
 {{- end }}
