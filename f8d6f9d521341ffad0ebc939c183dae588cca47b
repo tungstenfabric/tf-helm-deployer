@@ -1,0 +1,96 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "0d09ff18_98d1fd7d",
+        "filename": "contrail-thirdparty/templates/daemonset-analyticsdb.yaml",
+        "patchSetId": 3
+      },
+      "lineNbr": 183,
+      "author": {
+        "id": 437
+      },
+      "writtenOn": "2020-06-05T15:53:26Z",
+      "side": 1,
+      "message": "/var/log/contrail/database",
+      "range": {
+        "startLine": 183,
+        "startChar": 16,
+        "endLine": 183,
+        "endChar": 43
+      },
+      "revId": "f8d6f9d521341ffad0ebc939c183dae588cca47b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e4c2f291_dc5618c8",
+        "filename": "contrail-thirdparty/templates/daemonset-configdb.yaml",
+        "patchSetId": 3
+      },
+      "lineNbr": 161,
+      "author": {
+        "id": 437
+      },
+      "writtenOn": "2020-06-05T15:53:26Z",
+      "side": 1,
+      "message": "config-database",
+      "range": {
+        "startLine": 161,
+        "startChar": 34,
+        "endLine": 161,
+        "endChar": 51
+      },
+      "revId": "f8d6f9d521341ffad0ebc939c183dae588cca47b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "346581d3_fa4232d9",
+        "filename": "contrail-thirdparty/templates/daemonset-rabbitmq.yaml",
+        "patchSetId": 3
+      },
+      "lineNbr": 68,
+      "author": {
+        "id": 437
+      },
+      "writtenOn": "2020-06-05T15:53:26Z",
+      "side": 1,
+      "message": "rabbitmq",
+      "range": {
+        "startLine": 68,
+        "startChar": 15,
+        "endLine": 68,
+        "endChar": 21
+      },
+      "revId": "f8d6f9d521341ffad0ebc939c183dae588cca47b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d847872d_4342f5c0",
+        "filename": "contrail-thirdparty/templates/daemonset-rabbitmq.yaml",
+        "patchSetId": 3
+      },
+      "lineNbr": 70,
+      "author": {
+        "id": 437
+      },
+      "writtenOn": "2020-06-05T15:53:26Z",
+      "side": 1,
+      "message": "rabbitmq",
+      "range": {
+        "startLine": 70,
+        "startChar": 14,
+        "endLine": 70,
+        "endChar": 19
+      },
+      "revId": "f8d6f9d521341ffad0ebc939c183dae588cca47b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
