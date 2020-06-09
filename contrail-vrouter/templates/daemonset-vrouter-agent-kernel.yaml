@@ -233,6 +233,8 @@ spec:
           name: var-crashes-vrouter
         - mountPath: /etc/contrail/ssl
           name: ssl-dir
+        - mountPath: /var/lib/contrail/loadbalancer
+          name: lb-dir
       - name: contrail-vrouter-provisioner
         image: {{ .Values.global.images.tags.contrail_provisioner | default ( printf "%s/contrail-provisioner:%s" .Values.global.contrail_env.CONTAINER_REGISTRY .Values.global.contrail_env.CONTRAIL_CONTAINER_TAG ) | quote }}
         imagePullPolicy: {{ default "" .Values.global.images.imagePullPolicy | quote }}
@@ -317,6 +319,9 @@ spec:
       - name: host-etc
         hostPath:
           path: /etc
+      - name: lb-dir
+        hostPath:
+          path: /var/lib/contrail/loadbalancer
 {{- if .Values.manifests.job_kubernetes_cni_init }}
       - name: etc-cni
         hostPath:
