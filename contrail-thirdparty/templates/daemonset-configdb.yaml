@@ -46,6 +46,9 @@ spec:
       - name: contrail-configdb
         image: {{ .Values.global.images.tags.contrail_external_cassandra | default (printf "%s/contrail-external-cassandra:%s" .Values.global.contrail_env.CONTAINER_REGISTRY .Values.global.contrail_env.CONTRAIL_CONTAINER_TAG ) | quote }}
         imagePullPolicy: {{ default "" .Values.global.images.imagePullPolicy | quote }}
+        securityContext:
+          capabilities:
+            add: ["SYS_NICE"]
         env:
         - name: NODE_TYPE
           value: config-database
