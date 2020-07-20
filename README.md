@@ -1,10 +1,10 @@
 # Contrail Helm based deployment
 
-This repo consists of contrail helm charts which helps to deploy contrail networking components as microservices
+This repo consists of contrail helm charts which helps to deploy contrail networking components as microservices 
 
 ___
 
-## Architecure of contrail helm charts
+## Architecure of contrail helm charts 
 
 Contrail-helm-deployer is divided into below charts
 
