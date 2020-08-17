@@ -12,7 +12,7 @@ Contrail-helm-deployer is divided into below charts
 1. contrail-thrirdparty: Helps to install contrail thirdparty components like cassandra, zookepper, kafka and redis needed by other contrail charts
 2. contrail-controller: Using this chart we can install contrail services related to config, control and webui components
 3. contrail-analytics: Helps to install contrail analytics services
-4. contrail-vrouter: Installs contrail vrouter services
+4. contrail-vrouter: Installs contrail vrouter services 
 
 ___
 
