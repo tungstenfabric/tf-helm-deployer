@@ -1,13 +1,12 @@
 # Contrail Helm based deployment
 
 This repo consists of contrail helm charts which helps to deploy contrail networking components as microservices
-
+ 
 ___
 
 ## Architecure of contrail helm charts
 
 Contrail-helm-deployer is divided into below charts
-
 
 1. contrail-thrirdparty: Helps to install contrail thirdparty components like cassandra, zookepper, kafka and redis needed by other contrail charts
 2. contrail-controller: Using this chart we can install contrail services related to config, control and webui components
