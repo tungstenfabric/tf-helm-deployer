@@ -5,7 +5,7 @@ version: 0.1.0
 appVersion: Contrail 5.0.0
 home: https://github.com/tungstenfabric/tf-helm-deployer/
 sources:
-  - https://github.com/Juniper/contrail-controller/
+  - https://github.com/tungstenfabric/tf-controller/
 tillerVersion: ">=2.4.0"
 keywords:
   - Contrail
