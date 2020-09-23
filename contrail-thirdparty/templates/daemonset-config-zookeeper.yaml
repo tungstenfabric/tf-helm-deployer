@@ -84,4 +84,5 @@ spec:
       - name: config-zookeeper-log
         hostPath:
           path: /var/log/contrail/config-zookeeper
+          type: DirectoryOrCreate
 {{- end }}

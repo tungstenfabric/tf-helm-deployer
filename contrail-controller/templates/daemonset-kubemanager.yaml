@@ -108,6 +108,7 @@ spec:
       - name: contrail-log
         hostPath:
           path: /var/log/contrail
+          type: DirectoryOrCreate
       - name: host-usr-bin
         hostPath:
           path: {{ .Values.volumeMounts.host_usr_bin.hostPath }}

@@ -71,5 +71,6 @@ spec:
       - name: kafka-log
         hostPath:
           path: /var/log/contrail/kafka
+          type: DirectoryOrCreate
 
 {{- end }}

@@ -237,6 +237,7 @@ spec:
       - name: contrail-log
         hostPath:
           path: /var/log/contrail
+          type: DirectoryOrCreate
       - name: var-crashes-config
         hostPath:
           path: /var/crashes

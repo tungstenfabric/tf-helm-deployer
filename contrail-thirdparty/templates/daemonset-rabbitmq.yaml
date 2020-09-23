@@ -74,4 +74,5 @@ spec:
       - name: rabbitmq
         hostPath:
           path: /var/log/contrail/rabbitmq
+          type: DirectoryOrCreate
 {{- end }}

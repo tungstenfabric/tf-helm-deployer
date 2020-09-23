@@ -150,6 +150,7 @@ spec:
       - name: contrail-log
         hostPath:
           path: /var/log/contrail
+          type: DirectoryOrCreate
       - name: var-crashes-database
         hostPath:
           path: /var/crashes
@@ -162,5 +163,6 @@ spec:
       - name: configdb-log
         hostPath:
           path: /var/log/contrail/config-database
+          type: DirectoryOrCreate
 
 {{- end }}

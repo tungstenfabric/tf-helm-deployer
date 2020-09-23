@@ -304,6 +304,7 @@ spec:
       - name: contrail-log
         hostPath:
           path: /var/log/contrail
+          type: DirectoryOrCreate
       - name: os-release
         hostPath:
           path: /usr/lib/os-release

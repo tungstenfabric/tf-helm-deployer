@@ -127,6 +127,7 @@ spec:
       - name: contrail-log
         hostPath:
           path: /var/log/contrail
+          type: DirectoryOrCreate
       - name: var-crashes-webui
         hostPath:
           path: /var/crashes

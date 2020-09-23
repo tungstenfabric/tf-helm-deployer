@@ -390,6 +390,7 @@ spec:
       - name: contrail-log
         hostPath:
           path: /var/log/contrail
+          type: DirectoryOrCreate
       - name: var-crashes-vrouter
         hostPath:
           path: /var/crashes
