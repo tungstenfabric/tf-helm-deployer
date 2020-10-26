@@ -209,6 +209,8 @@ spec:
             name: var-crashes-vrouter
           - mountPath: /host/bin
             name: host-bin
+          - mountPath: /host/etc
+            name: host-etc
           - mountPath: /dev
             name: host-dev
           - mountPath: /etc/contrail/ssl
@@ -323,6 +325,9 @@ spec:
       - name: host-bin
         hostPath:
           path: /bin
+      - name: host-etc
+        hostPath:
+          path: /etc
       - name: host-etc-contrail
         hostPath:
           path: /etc/contrail
