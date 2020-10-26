@@ -192,6 +192,8 @@ spec:
           name: var-crashes-vrouter
         - mountPath: /host/bin
           name: host-bin
+        - mountPath: /host/etc
+          name: host-etc
         - mountPath: /dev/log
           name: host-dev-log
         - mountPath: /var/run
@@ -305,6 +307,9 @@ spec:
       - name: host-bin
         hostPath:
           path: /bin
+      - name: host-etc
+        hostPath:
+          path: /etc
       - name: host-usr-bin
         hostPath:
           path: {{ .Values.volumeMounts.host_usr_bin.hostPath }}
