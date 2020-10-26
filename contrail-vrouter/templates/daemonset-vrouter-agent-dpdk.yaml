@@ -213,6 +213,8 @@ spec:
             name: host-dev
           - mountPath: /etc/contrail/ssl
             name: ssl-dir
+          - mountPath: /host/etc
+            name: host-etc
 {{- if eq $host_os "centos"}}
           - mountPath: /etc/sysconfig/network-scripts
             name: network-scripts
