@@ -7,7 +7,7 @@ BUILD_CHARTS := $(foreach chart, $(CONTRAIL_CHARTS), build-$(chart))
 
 all: $(BUILD_CHARTS)
 
-.ONESHELL
+.ONESHELL:
 build-%: lint-% init-%
 	@echo "========================================="
 	@echo "      helm pack	$*     "
@@ -15,7 +15,7 @@ build-%: lint-% init-%
 	if [ -f $*/Chart.yaml ]
 	then
 		$(HELM) package $*
-		helm repo index $(shell pwd)
+		$(HELM) repo index $(shell pwd)
 	fi
 
 lint-%: init-%
