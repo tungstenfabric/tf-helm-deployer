@@ -65,6 +65,9 @@ spec:
       - name: contrail-control
         image: {{ .Values.global.images.tags.contrail_controller_control_control | default (printf "%s/contrail-controller-control-control:%s" .Values.global.contrail_env.CONTAINER_REGISTRY .Values.global.contrail_env.CONTRAIL_CONTAINER_TAG ) | quote }}
         imagePullPolicy: {{ default "" .Values.global.images.imagePullPolicy | quote }}
+        securityContext:
+          capabilities:
+            add: ["SYS_PTRACE"]
         envFrom:
         - configMapRef:
             name: contrail-controller-env

@@ -93,6 +93,9 @@ spec:
       - name: contrail-collector
         image: {{ .Values.global.images.tags.contrail_analytics_collector | default (printf "%s/contrail-analytics-collector:%s" .Values.global.contrail_env.CONTAINER_REGISTRY .Values.global.contrail_env.CONTRAIL_CONTAINER_TAG ) | quote }}
         imagePullPolicy: {{ default "" .Values.global.images.imagePullPolicy | quote }}
+        securityContext:
+          capabilities:
+            add: ["SYS_PTRACE"]
         envFrom:
         - configMapRef:
             name: contrail-analytics-env
